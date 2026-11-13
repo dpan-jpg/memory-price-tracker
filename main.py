@@ -29,7 +29,7 @@ def main():
         report.send(f"[警示] {len(alerts)} 項價格異動：{names}",
                     report.daily_html(today, [], M, alerts, []).split("<h3>今日有新報價")[0])
         analyze.record(con, alerts, today)
-    report.dashboard(M, S, df)
+    report.dashboard(M, S, df, {r["item_id"]: i for i, r in enumerate(rows)})
 
 
 if __name__ == "__main__":
