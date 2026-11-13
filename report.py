@@ -67,7 +67,9 @@ def send(subject, html):
         s.send_message(msg)
 
 
-def dashboard(M, S, df, path="docs/index.html"):
+def dashboard(M, S, df, order=None, path="docs/index.html"):
+    if order:  # 依原網頁順序排列
+        M = M.assign(_o=M.item_id.map(order).fillna(9999)).sort_values("_o", kind="stable").drop(columns="_o")
     names = dict(zip(M.item_id, M["name"]))
     hist = {i: [[t.strftime("%Y-%m-%d"), p] for t, p in zip(g.quote_time, g.price)]
             for i, g in df.sort_values("quote_time").groupby("item_id")}
@@ -114,7 +116,7 @@ const opt={responsive:true,animation:false,plugins:{legend:{labels:{boxWidth:12}
 function show(id){const it=D.items.find(i=>i.item_id===id),h=D.hist[id];ch1&&ch1.destroy();$('ct').textContent=`${it.name}（${it.currency}）`;
  ch1=new Chart($('cv'),{type:'line',data:{labels:h.map(x=>x[0]),datasets:[{label:it.name,data:h.map(x=>x[1]),stepped:true,borderColor:col[0],pointRadius:2}]},options:opt});render(id)}
 function render(sel){const c=$('cat').value,q=$('q').value.toLowerCase();
- const r=D.items.filter(i=>(!c||i.category===c)&&i.name.toLowerCase().includes(q)).sort((a,b)=>Math.abs(b.chg7??0)-Math.abs(a.chg7??0));
+ const r=D.items.filter(i=>(!c||i.category===c)&&i.name.toLowerCase().includes(q));
  $('tb').innerHTML=r.map(i=>`<tr data-id="${i.item_id}" class="${i.item_id===sel?'sel':''}"><td>${i.category}</td><td>${i.name}</td><td>${i.price}</td><td>${f(i.avg7)}</td><td>${f(i.avg30)}</td><td>${pc(i.chg7)}</td><td>${pc(i.chg30)}</td><td>${st(i)}</td></tr>`).join('')}
 $('tb').onclick=e=>{const t=e.target.closest('tr');t&&show(t.dataset.id)};$('cat').onchange=$('q').oninput=()=>render();render();
 if(!D.chains.length)$('chains').innerHTML='<p class="mut">累積至少兩天資料後會顯示。</p>';
